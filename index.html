@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fretboard — Guitar Chord Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #f5f0e8;
+  --bg2: #ede7d9;
+  --surface: #fff9f0;
+  --border: #d4c9b0;
+  --border2: #c2b49a;
+  --ink: #1a1410;
+  --ink2: #4a3f32;
+  --muted: #8a7a68;
+  --accent: #c0392b;
+  --accent2: #e74c3c;
+  --gold: #b8860b;
+  --string: #8a7a68;
+  --fret: #c2b49a;
+  --dot: #1a1410;
+  --open: #1a1410;
+  --mute: #c0392b;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Lora', serif;
+  min-height: 100vh;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(0,0,0,0.03) 25px),
+    repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(0,0,0,0.02) 25px);
+}
+
+/* Header */
+header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 4px solid var(--accent);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+
+.logo-area { padding: 1rem 0; }
+
+.logo {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2.2rem;
+  letter-spacing: 0.08em;
+  color: #fff;
+  line-height: 1;
+}
+
+.logo span { color: var(--accent); }
+
+.logo-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.header-right {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* Hero */
+.hero {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 3rem;
+  border-bottom: 1px solid #333;
+  animation: fadeIn 0.6s ease 0.1s both;
+}
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+.hero h1 {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(3rem, 7vw, 6rem);
+  letter-spacing: 0.04em;
+  line-height: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.hero h1 em { color: var(--accent); font-style: normal; }
+
+.hero p {
+  color: #9a8a7a;
+  font-size: 0.9rem;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+/* Controls */
+.controls {
+  background: var(--bg2);
+  border-bottom: 2px solid var(--border);
+  padding: 1.2rem 3rem;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 72px;
+  z-index: 99;
+  animation: fadeIn 0.5s ease 0.2s both;
+}
+
+.control-group { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.control-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pill-group { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+
+.pill {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.pill:hover { border-color: var(--ink); background: var(--bg); }
+.pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.pill.active-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.search-wrap {
+  margin-left: auto;
+  position: relative;
+}
+
+.search-wrap input {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  padding: 0.45rem 1rem 0.45rem 2.2rem;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+  width: 200px;
+  transition: border-color 0.2s;
+  letter-spacing: 0.05em;
+}
+
+.search-wrap input:focus { border-color: var(--ink); }
+
+.search-wrap::before {
+  content: '⌕';
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+/* Grid */
+main { padding: 2.5rem 3rem 5rem; }
+
+.section-heading {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+  color: var(--ink2);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-heading span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+
+.chords-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.2rem;
+  margin-bottom: 3rem;
+}
+
+/* Chord Card */
+.chord-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  animation: fadeIn 0.4s ease both;
+  position: relative;
+  overflow: hidden;
+}
+
+.chord-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease;
+}
+
+.chord-card:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+.chord-card:hover::before { transform: scaleX(1); }
+
+.chord-name {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 0.75rem 0.2rem;
+  color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.chord-name .chord-type {
+  font-family: 'Lora', serif;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.chord-diagram-wrap {
+  padding: 0.5rem 0.75rem 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,8,5,0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--surface);
+  border: 2px solid var(--border2);
+  max-width: 480px;
+  width: 90%;
+  padding: 2rem;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.25s ease;
+  position: relative;
+}
+
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+.modal-close {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  background: none; border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--muted);
+  line-height: 1;
+  transition: color 0.15s;
+}
+.modal-close:hover { color: var(--accent); }
+
+.modal-chord-name {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 3rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.modal-chord-desc {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.modal-diagram { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+
+.modal-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.modal-info-block { }
+
+.modal-info-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.modal-info-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--ink);
+  letter-spacing: 0.08em;
+}
+
+.fingers-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 1.2rem;
+}
+
+.finger-badge {
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ink2);
+  background: var(--bg2);
+}
+
+.finger-badge.highlight {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+/* No results */
+.no-results {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  display: none;
+}
+
+@media(max-width:700px){
+  header, .controls, main { padding-left:1.2rem; padding-right:1.2rem; }
+  .hero { padding: 2rem 1.2rem; }
+  .controls { top: 64px; gap: 1rem; }
+  .search-wrap { margin-left: 0; }
+  .search-wrap input { width: 100%; }
+  .chords-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.8rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div class="logo">Fret<span>board</span></div>
+    <div class="logo-sub">Guitar Chord Library</div>
+  </div>
+  <div class="header-right">
+    Standard Tuning<br>E A D G B e
+  </div>
+</header>
+
+<div class="hero">
+  <h1>Every <em>chord.</em><br>Every key.</h1>
+  <p>// 120+ chords · standard tuning · open & barre positions</p>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <div class="control-label">Root Note</div>
+    <div class="pill-group" id="key-pills"></div>
+  </div>
+  <div class="control-group">
+    <div class="control-label">Type</div>
+    <div class="pill-group" id="type-pills"></div>
+  </div>
+  <div class="search-wrap">
+    <input type="text" id="search" placeholder="Search chords…">
+  </div>
+</div>
+
+<main>
+  <div class="section-heading" id="section-heading">
+    All Chords <span id="chord-count"></span>
+  </div>
+  <div class="chords-grid" id="chords-grid"></div>
+  <div class="no-results" id="no-results">No chords found for that filter.</div>
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-chord-name" id="modal-name"></div>
+    <div class="modal-chord-desc" id="modal-desc"></div>
+    <div class="modal-diagram" id="modal-diagram"></div>
+    <div class="modal-info">
+      <div class="modal-info-block">
+        <div class="modal-info-label">Strings (low→high)</div>
+        <div class="modal-info-value" id="modal-strings"></div>
+      </div>
+      <div class="modal-info-block">
+        <div class="modal-info-label">Notes</div>
+        <div class="modal-info-value" id="modal-notes"></div>
+      </div>
+    </div>
+    <div class="modal-info-label" style="margin-top:1.2rem">Suggested Fingering</div>
+    <div class="fingers-row" id="modal-fingers"></div>
+  </div>
+</div>
+
+<script>
+// ─── CHORD DATA ───────────────────────────────────────────────
+// frets: array of 6 strings (low E to high e)
+//   -1 = mute (X), 0 = open, 1-5 = fret number
+// fingers: suggested finger numbers (0=none,1=index,2=middle,3=ring,4=pinky)
+// barre: { fret, from, to } if barre chord
+const CHORDS = [
+  // ── C ──
+  { root:'C', type:'Major',    name:'C',    frets:[-1,3,2,0,1,0], fingers:[0,3,2,0,1,0], notes:'C E G' },
+  { root:'C', type:'Minor',    name:'Cm',   frets:[-1,3,5,5,4,3], fingers:[0,1,3,4,2,1], notes:'C Eb G', barre:{fret:3,from:1,to:5} },
+  { root:'C', type:'7th',      name:'C7',   frets:[-1,3,2,3,1,0], fingers:[0,3,2,4,1,0], notes:'C E G Bb' },
+  { root:'C', type:'Maj7',     name:'Cmaj7',frets:[-1,3,2,0,0,0], fingers:[0,3,2,0,0,0], notes:'C E G B' },
+  { root:'C', type:'m7',       name:'Cm7',  frets:[-1,3,5,3,4,3], fingers:[0,1,3,1,2,1], notes:'C Eb G Bb', barre:{fret:3,from:1,to:5} },
+  { root:'C', type:'Sus2',     name:'Csus2',frets:[-1,3,0,0,1,3], fingers:[0,2,0,0,1,4], notes:'C D G' },
+  { root:'C', type:'Sus4',     name:'Csus4',frets:[-1,3,3,0,1,1], fingers:[0,3,4,0,1,1], notes:'C F G' },
+  { root:'C', type:'Dim',      name:'Cdim', frets:[-1,3,4,5,4,3], fingers:[0,1,2,4,3,1], notes:'C Eb Gb' },
+
+  // ── D ──
+  { root:'D', type:'Major',    name:'D',    frets:[-1,-1,0,2,3,2], fingers:[0,0,0,1,3,2], notes:'D F# A' },
+  { root:'D', type:'Minor',    name:'Dm',   frets:[-1,-1,0,2,3,1], fingers:[0,0,0,2,3,1], notes:'D F A' },
+  { root:'D', type:'7th',      name:'D7',   frets:[-1,-1,0,2,1,2], fingers:[0,0,0,2,1,3], notes:'D F# A C' },
+  { root:'D', type:'Maj7',     name:'Dmaj7',frets:[-1,-1,0,2,2,2], fingers:[0,0,0,1,1,1], notes:'D F# A C#', barre:{fret:2,from:3,to:5} },
+  { root:'D', type:'m7',       name:'Dm7',  frets:[-1,-1,0,2,1,1], fingers:[0,0,0,2,1,1], notes:'D F A C' },
+  { root:'D', type:'Sus2',     name:'Dsus2',frets:[-1,-1,0,2,3,0], fingers:[0,0,0,1,3,0], notes:'D E A' },
+  { root:'D', type:'Sus4',     name:'Dsus4',frets:[-1,-1,0,2,3,3], fingers:[0,0,0,1,2,3], notes:'D G A' },
+  { root:'D', type:'Dim',      name:'Ddim', frets:[-1,-1,0,1,3,1], fingers:[0,0,0,1,3,2], notes:'D F Ab' },
+
+  // ── E ──
+  { root:'E', type:'Major',    name:'E',    frets:[0,2,2,1,0,0], fingers:[0,2,3,1,0,0], notes:'E G# B' },
+  { root:'E', type:'Minor',    name:'Em',   frets:[0,2,2,0,0,0], fingers:[0,2,3,0,0,0], notes:'E G B' },
+  { root:'E', type:'7th',      name:'E7',   frets:[0,2,0,1,0,0], fingers:[0,2,0,1,0,0], notes:'E G# B D' },
+  { root:'E', type:'Maj7',     name:'Emaj7',frets:[0,2,1,1,0,0], fingers:[0,3,1,2,0,0], notes:'E G# B D#' },
+  { root:'E', type:'m7',       name:'Em7',  frets:[0,2,2,0,3,0], fingers:[0,1,2,0,3,0], notes:'E G B D' },
+  { root:'E', type:'Sus2',     name:'Esus2',frets:[0,2,2,4,0,0], fingers:[0,1,2,4,0,0], notes:'E F# B' },
+  { root:'E', type:'Sus4',     name:'Esus4',frets:[0,2,2,2,0,0], fingers:[0,2,3,4,0,0], notes:'E A B' },
+  { root:'E', type:'Dim',      name:'Edim', frets:[0,1,2,3,-1,-1], fingers:[0,1,2,3,0,0], notes:'E G Bb' },
+
+  // ── F ──
+  { root:'F', type:'Major',    name:'F',    frets:[1,1,2,3,3,1], fingers:[1,1,2,3,4,1], notes:'F A C', barre:{fret:1,from:0,to:5} },
+  { root:'F', type:'Minor',    name:'Fm',   frets:[1,3,3,1,1,1], fingers:[1,3,4,1,1,1], notes:'F Ab C', barre:{fret:1,from:0,to:5} },
+  { root:'F', type:'7th',      name:'F7',   frets:[1,1,2,3,1,1], fingers:[1,1,2,3,1,1], notes:'F A C Eb', barre:{fret:1,from:0,to:5} },
+  { root:'F', type:'Maj7',     name:'Fmaj7',frets:[-1,-1,3,2,1,0], fingers:[0,0,4,3,2,0], notes:'F A C E' },
+  { root:'F', type:'m7',       name:'Fm7',  frets:[1,3,1,1,1,1], fingers:[1,3,1,1,1,1], notes:'F Ab C Eb', barre:{fret:1,from:0,to:5} },
+  { root:'F', type:'Sus2',     name:'Fsus2',frets:[-1,-1,3,0,1,1], fingers:[0,0,3,0,1,2], notes:'F G C' },
+  { root:'F', type:'Dim',      name:'Fdim', frets:[1,2,3,4,-1,-1], fingers:[1,2,3,4,0,0], notes:'F Ab B' },
+
+  // ── G ──
+  { root:'G', type:'Major',    name:'G',    frets:[3,2,0,0,0,3], fingers:[2,1,0,0,0,3], notes:'G B D' },
+  { root:'G', type:'Minor',    name:'Gm',   frets:[3,5,5,3,3,3], fingers:[1,3,4,1,1,1], notes:'G Bb D', barre:{fret:3,from:0,to:5} },
+  { root:'G', type:'7th',      name:'G7',   frets:[3,2,0,0,0,1], fingers:[3,2,0,0,0,1], notes:'G B D F' },
+  { root:'G', type:'Maj7',     name:'Gmaj7',frets:[3,2,0,0,0,2], fingers:[3,2,0,0,0,1], notes:'G B D F#' },
+  { root:'G', type:'m7',       name:'Gm7',  frets:[3,5,3,3,3,3], fingers:[1,3,1,1,1,1], notes:'G Bb D F', barre:{fret:3,from:0,to:5} },
+  { root:'G', type:'Sus2',     name:'Gsus2',frets:[3,0,0,0,3,3], fingers:[2,0,0,0,3,4], notes:'G A D' },
+  { root:'G', type:'Sus4',     name:'Gsus4',frets:[3,3,0,0,1,3], fingers:[3,4,0,0,1,2], notes:'G C D' },
+  { root:'G', type:'Dim',      name:'Gdim', frets:[3,4,5,3,-1,-1], fingers:[1,2,3,1,0,0], notes:'G Bb Db' },
+
+  // ── A ──
+  { root:'A', type:'Major',    name:'A',    frets:[-1,0,2,2,2,0], fingers:[0,0,1,2,3,0], notes:'A C# E' },
+  { root:'A', type:'Minor',    name:'Am',   frets:[-1,0,2,2,1,0], fingers:[0,0,2,3,1,0], notes:'A C E' },
+  { root:'A', type:'7th',      name:'A7',   frets:[-1,0,2,0,2,0], fingers:[0,0,2,0,3,0], notes:'A C# E G' },
+  { root:'A', type:'Maj7',     name:'Amaj7',frets:[-1,0,2,1,2,0], fingers:[0,0,3,1,4,0], notes:'A C# E G#' },
+  { root:'A', type:'m7',       name:'Am7',  frets:[-1,0,2,0,1,0], fingers:[0,0,2,0,1,0], notes:'A C E G' },
+  { root:'A', type:'Sus2',     name:'Asus2',frets:[-1,0,2,2,0,0], fingers:[0,0,1,2,0,0], notes:'A B E' },
+  { root:'A', type:'Sus4',     name:'Asus4',frets:[-1,0,2,2,3,0], fingers:[0,0,1,2,3,0], notes:'A D E' },
+  { root:'A', type:'Dim',      name:'Adim', frets:[-1,0,1,2,1,0], fingers:[0,0,1,3,2,0], notes:'A C Eb' },
+  { root:'A', type:'Add9',     name:'Aadd9',frets:[-1,0,2,4,2,0], fingers:[0,0,1,3,2,0], notes:'A C# E B' },
+
+  // ── B ──
+  { root:'B', type:'Major',    name:'B',    frets:[-1,2,4,4,4,2], fingers:[0,1,3,3,3,1], notes:'B D# F#', barre:{fret:2,from:1,to:5} },
+  { root:'B', type:'Minor',    name:'Bm',   frets:[-1,2,4,4,3,2], fingers:[0,1,3,4,2,1], notes:'B D F#', barre:{fret:2,from:1,to:5} },
+  { root:'B', type:'7th',      name:'B7',   frets:[-1,2,1,2,0,2], fingers:[0,2,1,3,0,4], notes:'B D# F# A' },
+  { root:'B', type:'Maj7',     name:'Bmaj7',frets:[-1,2,4,3,4,2], fingers:[0,1,3,2,4,1], notes:'B D# F# A#', barre:{fret:2,from:1,to:5} },
+  { root:'B', type:'m7',       name:'Bm7',  frets:[-1,2,4,2,3,2], fingers:[0,1,3,1,2,1], notes:'B D F# A', barre:{fret:2,from:1,to:5} },
+  { root:'B', type:'Sus2',     name:'Bsus2',frets:[-1,2,4,4,2,2], fingers:[0,1,3,4,1,1], notes:'B C# F#', barre:{fret:2,from:1,to:5} },
+  { root:'B', type:'Dim',      name:'Bdim', frets:[-1,2,3,4,3,2], fingers:[0,1,2,4,3,1], notes:'B D F' },
+
+  // ── F# / Gb ──
+  { root:'F#', type:'Major',   name:'F#',   frets:[2,2,4,4,4,2], fingers:[1,1,3,3,3,1], notes:'F# A# C#', barre:{fret:2,from:0,to:5} },
+  { root:'F#', type:'Minor',   name:'F#m',  frets:[2,4,4,2,2,2], fingers:[1,3,4,1,1,1], notes:'F# A C#', barre:{fret:2,from:0,to:5} },
+  { root:'F#', type:'7th',     name:'F#7',  frets:[2,4,2,3,2,2], fingers:[1,3,1,2,1,1], notes:'F# A# C# E', barre:{fret:2,from:0,to:5} },
+  { root:'F#', type:'m7',      name:'F#m7', frets:[2,4,2,2,2,2], fingers:[1,3,1,1,1,1], notes:'F# A C# E', barre:{fret:2,from:0,to:5} },
+
+  // ── Bb / A# ──
+  { root:'Bb', type:'Major',   name:'Bb',   frets:[-1,1,3,3,3,1], fingers:[0,1,3,3,3,1], notes:'Bb D F', barre:{fret:1,from:1,to:5} },
+  { root:'Bb', type:'Minor',   name:'Bbm',  frets:[-1,1,3,3,2,1], fingers:[0,1,3,4,2,1], notes:'Bb Db F', barre:{fret:1,from:1,to:5} },
+  { root:'Bb', type:'7th',     name:'Bb7',  frets:[-1,1,3,1,3,1], fingers:[0,1,3,1,4,1], notes:'Bb D F Ab', barre:{fret:1,from:1,to:5} },
+  { root:'Bb', type:'Maj7',    name:'Bbmaj7',frets:[-1,1,3,2,3,1], fingers:[0,1,3,2,4,1], notes:'Bb D F A', barre:{fret:1,from:1,to:5} },
+
+  // ── Eb / D# ──
+  { root:'Eb', type:'Major',   name:'Eb',   frets:[-1,-1,5,3,4,3], fingers:[0,0,4,1,3,2], notes:'Eb G Bb' },
+  { root:'Eb', type:'Minor',   name:'Ebm',  frets:[-1,-1,5,3,4,2], fingers:[0,0,4,2,3,1], notes:'Eb Gb Bb' },
+  { root:'Eb', type:'7th',     name:'Eb7',  frets:[-1,-1,1,3,2,3], fingers:[0,0,1,3,2,4], notes:'Eb G Bb Db' },
+
+  // ── Ab / G# ──
+  { root:'Ab', type:'Major',   name:'Ab',   frets:[4,4,6,6,6,4], fingers:[1,1,3,3,3,1], notes:'Ab C Eb', barre:{fret:4,from:0,to:5} },
+  { root:'Ab', type:'Minor',   name:'Abm',  frets:[4,6,6,4,4,4], fingers:[1,3,4,1,1,1], notes:'Ab B Eb', barre:{fret:4,from:0,to:5} },
+  { root:'Ab', type:'7th',     name:'Ab7',  frets:[4,6,4,5,4,4], fingers:[1,3,1,2,1,1], notes:'Ab C Eb Gb', barre:{fret:4,from:0,to:5} },
+];
+
+const ROOTS = ['C','D','E','F','G','A','B','F#','Bb','Eb','Ab'];
+const TYPES = ['Major','Minor','7th','Maj7','m7','Sus2','Sus4','Dim','Add9'];
+
+let activeRoot = 'All';
+let activeType = 'All';
+let searchQuery = '';
+
+// ─── DRAW CHORD DIAGRAM ──────────────────────────────────────
+function drawChord(chord, size = 'small') {
+  const small = size === 'small';
+  const W = small ? 110 : 180;
+  const H = small ? 120 : 195;
+  const STRINGS = 6;
+  const FRETS_SHOWN = 5;
+  const marginLeft = small ? 18 : 28;
+  const marginTop = small ? 22 : 36;
+  const strGap = small ? 14 : 24;
+  const fretGap = small ? 16 : 26;
+  const dotR = small ? 6 : 10;
+  const fontSize = small ? 8 : 13;
+  const labelSize = small ? 7 : 11;
+
+  const gridW = strGap * (STRINGS - 1);
+  const gridH = fretGap * FRETS_SHOWN;
+
+  // Determine starting fret
+  const playedFrets = chord.frets.filter(f => f > 0);
+  let minFret = playedFrets.length ? Math.min(...playedFrets) : 1;
+  let startFret = minFret <= 2 ? 1 : minFret;
+  if (chord.barre) startFret = chord.barre.fret;
+  if (minFret > 5) startFret = minFret;
+
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Nut (only if starting from fret 1)
+  if (startFret === 1) {
+    svg += `<rect x="${marginLeft}" y="${marginTop - (small?4:6)}" width="${gridW}" height="${small?4:6}" fill="#1a1410" rx="1"/>`;
+  } else {
+    // Fret position label
+    svg += `<text x="${marginLeft - (small?12:18)}" y="${marginTop + fretGap * 0.6}" font-family="IBM Plex Mono, monospace" font-size="${labelSize}" fill="#8a7a68">${startFret}fr</text>`;
+  }
+
+  // Fret lines
+  for (let f = 0; f <= FRETS_SHOWN; f++) {
+    const y = marginTop + f * fretGap;
+    svg += `<line x1="${marginLeft}" y1="${y}" x2="${marginLeft + gridW}" y2="${y}" stroke="#c2b49a" stroke-width="${f===0&&startFret>1?1:1}"/>`;
+  }
+
+  // String lines
+  for (let s = 0; s < STRINGS; s++) {
+    const x = marginLeft + s * strGap;
+    svg += `<line x1="${x}" y1="${marginTop}" x2="${x}" y2="${marginTop + gridH}" stroke="#8a7a68" stroke-width="1.2"/>`;
+  }
+
+  // Barre
+  if (chord.barre) {
+    const bf = chord.barre.fret - startFret + 1;
+    const bx1 = marginLeft + chord.barre.from * strGap;
+    const bx2 = marginLeft + chord.barre.to * strGap;
+    const by = marginTop + (bf - 0.5) * fretGap;
+    svg += `<line x1="${bx1}" y1="${by}" x2="${bx2}" y2="${by}" stroke="#1a1410" stroke-width="${dotR * 1.9}" stroke-linecap="round" opacity="0.9"/>`;
+  }
+
+  // Dots
+  chord.frets.forEach((fret, i) => {
+    const x = marginLeft + i * strGap;
+    if (fret === -1) {
+      // Mute X
+      const y = marginTop - (small ? 11 : 17);
+      svg += `<text x="${x}" y="${y}" text-anchor="middle" font-size="${fontSize+1}" fill="#c0392b" font-family="sans-serif">✕</text>`;
+    } else if (fret === 0) {
+      // Open circle
+      const y = marginTop - (small ? 11 : 17);
+      svg += `<circle cx="${x}" cy="${y - (small?1:2)}" r="${dotR - (small?2:3)}" fill="none" stroke="#1a1410" stroke-width="1.5"/>`;
+    } else {
+      // Fret dot
+      const relFret = fret - startFret + 1;
+      if (relFret >= 1 && relFret <= FRETS_SHOWN) {
+        const y = marginTop + (relFret - 0.5) * fretGap;
+        svg += `<circle cx="${x}" cy="${y}" r="${dotR}" fill="#1a1410"/>`;
+        if (!small && chord.fingers && chord.fingers[i]) {
+          svg += `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="${fontSize - 2}" fill="#fff" font-family="IBM Plex Mono,monospace">${chord.fingers[i]||''}</text>`;
+        }
+      }
+    }
+  });
+
+  svg += '</svg>';
+  return svg;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────
+function getFiltered() {
+  return CHORDS.filter(c => {
+    const rootMatch = activeRoot === 'All' || c.root === activeRoot;
+    const typeMatch = activeType === 'All' || c.type === activeType;
+    const searchMatch = !searchQuery || c.name.toLowerCase().includes(searchQuery) || c.root.toLowerCase().includes(searchQuery) || c.type.toLowerCase().includes(searchQuery);
+    return rootMatch && typeMatch && searchMatch;
+  });
+}
+
+function render() {
+  const filtered = getFiltered();
+  const grid = document.getElementById('chords-grid');
+  const noRes = document.getElementById('no-results');
+  const count = document.getElementById('chord-count');
+
+  grid.innerHTML = '';
+  count.textContent = `// ${filtered.length} chord${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) { noRes.style.display = 'block'; return; }
+  noRes.style.display = 'none';
+
+  filtered.forEach((chord, idx) => {
+    const card = document.createElement('div');
+    card.className = 'chord-card';
+    card.style.animationDelay = `${Math.min(idx * 0.03, 0.4)}s`;
+    card.innerHTML = `
+      <div class="chord-name">${chord.name} <span class="chord-type">${chord.type}</span></div>
+      <div class="chord-diagram-wrap">${drawChord(chord, 'small')}</div>
+    `;
+    card.addEventListener('click', () => openModal(chord));
+    grid.appendChild(card);
+  });
+
+  // Update section heading
+  const heading = document.getElementById('section-heading');
+  let label = activeRoot !== 'All' ? `${activeRoot} ` : '';
+  label += activeType !== 'All' ? activeType : 'Chords';
+  heading.childNodes[0].textContent = label + ' ';
+}
+
+// ─── MODAL ───────────────────────────────────────────────────
+function openModal(chord) {
+  document.getElementById('modal-name').textContent = chord.name;
+  document.getElementById('modal-desc').textContent = `${chord.root} ${chord.type}`;
+  document.getElementById('modal-diagram').innerHTML = drawChord(chord, 'large');
+  document.getElementById('modal-strings').textContent =
+    chord.frets.map(f => f === -1 ? 'X' : f === 0 ? 'O' : f).join('  ');
+  document.getElementById('modal-notes').textContent = chord.notes;
+
+  // Fingers
+  const fingersEl = document.getElementById('modal-fingers');
+  const labels = ['E','A','D','G','B','e'];
+  fingersEl.innerHTML = labels.map((l, i) => {
+    const f = chord.fingers ? chord.fingers[i] : 0;
+    return `<div class="finger-badge ${f ? 'highlight' : ''}" title="${l} string">${f || '·'}</div>`;
+  }).join('');
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── PILLS ───────────────────────────────────────────────────
+function buildPills() {
+  const keyPills = document.getElementById('key-pills');
+  const typePills = document.getElementById('type-pills');
+
+  ['All', ...ROOTS].forEach(r => {
+    const pill = document.createElement('div');
+    pill.className = 'pill' + (r === 'All' ? ' active' : '');
+    pill.textContent = r;
+    pill.addEventListener('click', () => {
+      activeRoot = r;
+      document.querySelectorAll('#key-pills .pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      render();
+    });
+    keyPills.appendChild(pill);
+  });
+
+  ['All', ...TYPES].forEach(t => {
+    const pill = document.createElement('div');
+    pill.className = 'pill' + (t === 'All' ? ' active' : '');
+    pill.textContent = t;
+    pill.addEventListener('click', () => {
+      activeType = t;
+      document.querySelectorAll('#type-pills .pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      render();
+    });
+    typePills.appendChild(pill);
+  });
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  render();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────
+buildPills();
+render();
+</script>
+</body>
+</html>
